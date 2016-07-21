@@ -1,14 +1,21 @@
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.config.Lookup;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
+import org.apache.http.impl.cookie.BestMatchSpecFactory;
+import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
@@ -28,18 +35,28 @@ public class ClientFormLogin {
         long start = System.currentTimeMillis();
 
         BasicCookieStore cookieStore = new BasicCookieStore();
+      //  Lookup<CookieSpecProvider> asdf;
+
+        Registry<CookieSpecProvider> cookieSpecRegistry = RegistryBuilder
+                .<CookieSpecProvider> create()
+                .register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory())
+                .register(CookieSpecs.BROWSER_COMPATIBILITY,
+                        new BrowserCompatSpecFactory()).build();
+
         CloseableHttpClient httpclient = HttpClients.custom()
                 .setDefaultCookieStore(cookieStore)
+                .setDefaultCookieSpecRegistry(cookieSpecRegistry)
               //  .setRedirectStrategy(new LaxRedirectStrategy())
                 .setUserAgent("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; WOW64; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; .NET4.0C; .NET4.0E)")
                 .build();
 
         try {
- /*
-           HttpGet httpget0 = new HttpGet("https://xueqiu.com/user/login");
+
+           HttpGet httpget0 = new HttpGet("https://xueqiu.com/");
             CloseableHttpResponse response = httpclient.execute(httpget0);
             try {
                 HttpEntity entity = response.getEntity();
+                System.out.println("EntityUtils form get: " +EntityUtils.toString(entity));
                 System.out.println("Login form get: " + response.getStatusLine());
                 List<Cookie> cookies = cookieStore.getCookies();
                 if (cookies.isEmpty()) {
@@ -53,7 +70,7 @@ public class ClientFormLogin {
                 response.close();
             }
 
-      */
+
          HttpGet httpget = new HttpGet("https://xueqiu.com/service/csrf?api=/user/login");
             CloseableHttpResponse response1 = httpclient.execute(httpget);
             try {
